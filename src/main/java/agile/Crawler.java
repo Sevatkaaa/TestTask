@@ -22,7 +22,7 @@ public class Crawler {
     private static final String DELIMITER = " > ";
 
     public static void main(String[] args) throws IOException {
-        String url = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-0-origin.html";
+        String url = args[0];
         Document document = Jsoup.connect(url).get();
         Elements elements = document.select(A_HREF);
         Element okButton = null;
@@ -40,7 +40,7 @@ public class Crawler {
         Map<String, String> attrs = attributes.stream()
                 .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
 
-        String targetUrl = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-4-the-mash.html";
+        String targetUrl = args[1];
         Document targetDoc = Jsoup.connect(targetUrl).get();
         Elements targetElements = targetDoc.select(A_HREF);
         Element resultButton = null;
