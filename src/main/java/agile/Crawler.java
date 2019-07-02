@@ -8,6 +8,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,6 @@ public class Crawler {
         List<Attribute> attributes = okButton.attributes().asList();
         Map<String, String> attrs = attributes.stream()
                 .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
-        System.out.println(attrs);
 
         String targetUrl = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-3-the-escape.html";
         Document targetDoc = Jsoup.connect(targetUrl).get();
@@ -59,6 +59,14 @@ public class Crawler {
                 break;
             }
         }
-        System.out.println(resultButton);
+        Element currentElem = resultButton;
+        List<String> path = new LinkedList<>();
+        String tagName = null;
+        while (!"html".equals(tagName)) {
+            tagName = currentElem.tagName();
+            path.add(0, tagName);
+            currentElem = currentElem.parent();
+        }
+        System.out.println(String.join(" > ", path));
     }
 }
