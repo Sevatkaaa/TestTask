@@ -18,6 +18,8 @@ public class Crawler {
     private static final String OK_BUTTON_ID = "make-everything-ok-button";
     private static final String A_HREF = "a[href]";
     private static final int MIN_EQUALITIES_TO_FIND_BUTTON = 2;
+    private static final String HTML_TAG = "html";
+    private static final String DELIMITER = " > ";
 
     public static void main(String[] args) throws IOException {
         String url = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-0-origin.html";
@@ -38,7 +40,7 @@ public class Crawler {
         Map<String, String> attrs = attributes.stream()
                 .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
 
-        String targetUrl = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-3-the-escape.html";
+        String targetUrl = "https://agileengine.bitbucket.io/beKIvpUlPMtzhfAy/samples/sample-4-the-mash.html";
         Document targetDoc = Jsoup.connect(targetUrl).get();
         Elements targetElements = targetDoc.select(A_HREF);
         Element resultButton = null;
@@ -59,14 +61,18 @@ public class Crawler {
                 break;
             }
         }
+        if (resultButton == null) {
+            System.out.println("Button was not found, it was hidden in a very good way :(");
+            return;
+        }
         Element currentElem = resultButton;
         List<String> path = new LinkedList<>();
         String tagName = null;
-        while (!"html".equals(tagName)) {
+        while (!HTML_TAG.equals(tagName)) {
             tagName = currentElem.tagName();
             path.add(0, tagName);
             currentElem = currentElem.parent();
         }
-        System.out.println(String.join(" > ", path));
+        System.out.println(String.join(DELIMITER, path));
     }
 }
