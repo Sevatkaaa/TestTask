@@ -3,7 +3,6 @@ package agile;
 import agile.exception.ButtonNotFoundException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -17,35 +16,15 @@ public class Crawler {
 
     private static final String OK_BUTTON_ID = "make-everything-ok-button";
     private static final String A_HREF = "a[href]";
-    private static final int MIN_EQUALITIES_TO_FIND_BUTTON = 2;
+    private static final long MIN_EQUALITIES_TO_FIND_BUTTON = 2;
     private static final String HTML_TAG = "html";
     
     public List<String> findButtonByOrigin(String originUrl, String targetUrl) throws IOException {
-        Map<String, String> attrs = getOriginButtonAttributes(originUrl);
+        Map<String, String> originAttributes = getOriginButtonAttributes(originUrl);
 
         Elements targetElements = getLinksFromDocument(targetUrl);
-        Element resultButton = null;
-        for (Element element : targetElements) {
-            int equalities = 0;
-            Attributes targetAttrs = element.attributes();
-            for (Attribute attribute : targetAttrs) {
-                String value = attrs.get(attribute.getKey());
-                if (value == null) {
-                    continue;
-                }
-                if (attribute.getValue().contains(value)) {
-                    equalities++;
-                }
-            }
-            if (equalities > MIN_EQUALITIES_TO_FIND_BUTTON) {
-                resultButton = element;
-                break;
-            }
-        }
-        if (resultButton == null) {
-            System.out.println("Button was not found, it was hidden in a very good way :(");
-            throw new ButtonNotFoundException();
-        }
+        Element resultButton = getResultButton(originAttributes, targetElements);
+        
         Element currentElem = resultButton;
         List<String> path = new LinkedList<>();
         String tagName = null;
@@ -55,6 +34,24 @@ public class Crawler {
             currentElem = currentElem.parent();
         }
         return path;
+    }
+
+    private Element getResultButton(Map<String, String> originAttributes, Elements targetElements) {
+        return targetElements.stream()
+                .filter(element ->  getEqualitiesForElement(originAttributes, element) > MIN_EQUALITIES_TO_FIND_BUTTON)
+                .findFirst()
+                .orElseThrow(ButtonNotFoundException::new);
+    }
+
+    private long getEqualitiesForElement(Map<String, String> originAttributes, Element element) {
+        return element.attributes().asList().stream()
+                .filter(attribute -> containsAttribute(attribute, originAttributes))
+                .count();
+    }
+
+    private boolean containsAttribute(Attribute attribute, Map<String, String> originAttributes) {
+        String value = originAttributes.get(attribute.getKey());
+        return value != null && attribute.getValue().contains(value);
     }
 
     private Map<String, String> getOriginButtonAttributes(String url) throws IOException {
