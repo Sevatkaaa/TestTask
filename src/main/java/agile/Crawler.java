@@ -25,15 +25,7 @@ public class Crawler {
         Elements targetElements = getLinksFromDocument(targetUrl);
         Element resultButton = getResultButton(originAttributes, targetElements);
         
-        Element currentElem = resultButton;
-        List<String> path = new LinkedList<>();
-        String tagName = null;
-        while (!HTML_TAG.equals(tagName)) {
-            tagName = currentElem.tagName();
-            path.add(0, tagName);
-            currentElem = currentElem.parent();
-        }
-        return path;
+        return getResultPath(resultButton);
     }
 
     private Map<String, String> getOriginButtonAttributes(String url) throws IOException {
@@ -71,6 +63,17 @@ public class Crawler {
     private boolean containsAttribute(Attribute attribute, Map<String, String> originAttributes) {
         String value = originAttributes.get(attribute.getKey());
         return value != null && attribute.getValue().contains(value);
+    }
+
+    private List<String> getResultPath(Element currentElem) {
+        List<String> path = new LinkedList<>();
+        String tagName = null;
+        while (!HTML_TAG.equals(tagName)) {
+            tagName = currentElem.tagName();
+            path.add(0, tagName);
+            currentElem = currentElem.parent();
+        }
+        return path;
     }
     
 }
