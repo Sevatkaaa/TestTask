@@ -1,5 +1,7 @@
 package agile;
 
+import agile.data.ElementData;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -10,9 +12,10 @@ public class CrawlerRunner {
     public static void main(String[] args) throws IOException {
         Crawler crawler = new Crawler();
         
-        List<String> path = crawler.findButtonByOrigin(args[0], args[1]);
+        List<ElementData> path = crawler.findButtonByOrigin(args[0], args[1]);
         
-        System.out.println(String.join(DELIMITER, path));
+        path.stream().forEach(element -> System.out.println(element + DELIMITER));
+        System.out.println("Found button!");
     }
     
 }

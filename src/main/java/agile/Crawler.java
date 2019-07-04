@@ -1,5 +1,7 @@
 package agile;
 
+import agile.converter.ElementDataConverter;
+import agile.data.ElementData;
 import agile.exception.ButtonNotFoundException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -19,7 +21,9 @@ public class Crawler {
     private static final long MIN_EQUALITIES_TO_FIND_BUTTON = 2;
     private static final String HTML_TAG = "html";
     
-    public List<String> findButtonByOrigin(String originUrl, String targetUrl) throws IOException {
+    private ElementDataConverter elementDataConverter = new ElementDataConverter();
+    
+    public List<ElementData> findButtonByOrigin(String originUrl, String targetUrl) throws IOException {
         Map<String, String> originAttributes = getOriginButtonAttributes(originUrl);
 
         Elements targetElements = getLinksFromDocument(targetUrl);
@@ -65,12 +69,12 @@ public class Crawler {
         return value != null && attribute.getValue().contains(value);
     }
 
-    private List<String> getResultPath(Element currentElem) {
-        List<String> path = new LinkedList<>();
+    private List<ElementData> getResultPath(Element currentElem) {
+        List<ElementData> path = new LinkedList<>();
         String tagName = null;
         while (!HTML_TAG.equals(tagName)) {
             tagName = currentElem.tagName();
-            path.add(0, tagName);
+            path.add(0, elementDataConverter.convert(currentElem));
             currentElem = currentElem.parent();
         }
         return path;
