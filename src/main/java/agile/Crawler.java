@@ -1,9 +1,9 @@
 package agile;
 
+import agile.exception.ButtonNotFoundException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -22,27 +22,9 @@ public class Crawler {
     private static final String DELIMITER = " > ";
 
     public static void main(String[] args) throws IOException {
-        String url = args[0];
-        Document document = Jsoup.connect(url).get();
-        Elements elements = document.select(A_HREF);
-        Element okButton = null;
-        for (Element element : elements) {
-            Element actualElement = element.getElementById(OK_BUTTON_ID);
-            if (actualElement != null) {
-                okButton = actualElement;
-            }
-        }
-        if (okButton == null) {
-            System.out.println("Button not found");
-            return;
-        }
-        List<Attribute> attributes = okButton.attributes().asList();
-        Map<String, String> attrs = attributes.stream()
-                .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
+        Map<String, String> attrs = getOriginButtonAttributes(args[0]);
 
-        String targetUrl = args[1];
-        Document targetDoc = Jsoup.connect(targetUrl).get();
-        Elements targetElements = targetDoc.select(A_HREF);
+        Elements targetElements = getLinksFromDocument(args[1]);
         Element resultButton = null;
         for (Element element : targetElements) {
             int equalities = 0;
@@ -74,5 +56,24 @@ public class Crawler {
             currentElem = currentElem.parent();
         }
         System.out.println(String.join(DELIMITER, path));
+    }
+
+    private static Map<String, String> getOriginButtonAttributes(String url) throws IOException {
+        Elements elements = getLinksFromDocument(url);
+        Element okButton = findOkButton(elements);
+        List<Attribute> attributes = okButton.attributes().asList();
+        return attributes.stream()
+                .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
+    }
+
+    private static Element findOkButton(Elements elements) {
+        return elements.stream()
+                .filter(element -> element.getElementById(OK_BUTTON_ID) != null)
+                .findFirst()
+                .orElseThrow(ButtonNotFoundException::new);
+    }
+
+    private static Elements getLinksFromDocument(String url) throws IOException {
+        return Jsoup.connect(url).get().select(A_HREF);
     }
 }
