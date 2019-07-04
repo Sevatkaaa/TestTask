@@ -36,6 +36,25 @@ public class Crawler {
         return path;
     }
 
+    private Map<String, String> getOriginButtonAttributes(String url) throws IOException {
+        Elements elements = getLinksFromDocument(url);
+        Element okButton = findOkButton(elements);
+        List<Attribute> attributes = okButton.attributes().asList();
+        return attributes.stream()
+                .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
+    }
+
+    private Elements getLinksFromDocument(String url) throws IOException {
+        return Jsoup.connect(url).get().select(A_HREF);
+    }
+
+    private Element findOkButton(Elements elements) {
+        return elements.stream()
+                .filter(element -> element.getElementById(OK_BUTTON_ID) != null)
+                .findFirst()
+                .orElseThrow(ButtonNotFoundException::new);
+    }
+
     private Element getResultButton(Map<String, String> originAttributes, Elements targetElements) {
         return targetElements.stream()
                 .filter(element ->  getEqualitiesForElement(originAttributes, element) > MIN_EQUALITIES_TO_FIND_BUTTON)
@@ -52,25 +71,6 @@ public class Crawler {
     private boolean containsAttribute(Attribute attribute, Map<String, String> originAttributes) {
         String value = originAttributes.get(attribute.getKey());
         return value != null && attribute.getValue().contains(value);
-    }
-
-    private Map<String, String> getOriginButtonAttributes(String url) throws IOException {
-        Elements elements = getLinksFromDocument(url);
-        Element okButton = findOkButton(elements);
-        List<Attribute> attributes = okButton.attributes().asList();
-        return attributes.stream()
-                .collect(Collectors.toMap(Attribute::getKey, Attribute::getValue));
-    }
-
-    private Element findOkButton(Elements elements) {
-        return elements.stream()
-                .filter(element -> element.getElementById(OK_BUTTON_ID) != null)
-                .findFirst()
-                .orElseThrow(ButtonNotFoundException::new);
-    }
-
-    private Elements getLinksFromDocument(String url) throws IOException {
-        return Jsoup.connect(url).get().select(A_HREF);
     }
     
 }
